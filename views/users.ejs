@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+
+
+</head>
+<ul style="width: 100%;
+    height: 60px;
+    line-height: 60px;
+    display:block;
+    margin: 0 auto;
+    padding: 0px;
+    background-color: beige;
+    font-size: 40px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LLBMs
+ <li style=" width: 60px;
+        height: 30px;
+        display: block;
+        color: black;
+        line-height: 60px;
+        text-align: right;
+        list-style-type: none;
+        float: right;"><a  target="_self" id="aA" style="cursor: pointer" >历史留言</a></li>
+    <li style=" width: 100px;
+  height: 30px;
+  display: block;
+  color: black;
+  line-height: 60px;
+  text-align: right;
+  list-style-type: none;
+  float: right;"><a  target="_self" id="aB" style="cursor: pointer" >未通过</a></li>
+    <li style=" width: 100px;
+  height: 30px;
+  display: block;
+  color: black;
+  line-height: 60px;
+  text-align: right;
+  list-style-type: none;
+  float: right;"><a target="_self" id="BC" style="cursor: pointer" >所有人</a></li>
+    <li style=" width: 100px;
+  height: 30px;
+  display: block;
+  color: black;
+  line-height: 60px;
+  text-align: right;
+  list-style-type: none;
+  float: right;"><a  target="_self" id="aC" style="cursor: pointer" >注销</a></li>
+
+</ul>
+
+<body>
+<h1 align="right">欢迎<%=title%></h1><br/>
+<h2>随时发表评论</h2>
+    <textarea
+            cols="50"
+            rows="4"
+            style="font-size: 50px; align-self: center; resize: none;"
+            id="id_note"></textarea>
+
+
+    <button
+            style="width: 100px; height: 40px; background-color: rgba(234,107,27,0.33); color: #fdfbfb; border-radius: 20px; border: none; outline: none; cursor: pointer; margin-bottom: 10px;"
+            id="id_submit" name="ss">
+        提交
+    </button>
+    <input id="id_checkBox" type="checkbox">
+    匿名
+    <br/>
+
+    <div id="id_user_notes">
+        <!--add-->
+    </div>
+
+
+    <script>
+        var mode = 1;
+        var lastMode = 1;
+    </script>
+
+    <script>
+        document.getElementById("aA").onclick = function () {
+            lastMode = mode;
+            mode = 1;
+            lastTimeData = null;
+        }
+        document.getElementById("aB").onclick = function () {
+            lastMode = mode;
+            mode = 2;
+            lastTimeData = null;
+        }
+        document.getElementById("BC").onclick = function () {
+            lastMode = mode;
+            mode = 3;
+            lastTimeData = null;
+        }
+    </script>
+    <script>
+        /*设置注销监听*/
+        document.getElementById("aC").onclick = function () {
+            alert("注销");
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {  /*所有数据已经就绪*/
+                    if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                        if (xhr.responseText.indexOf("http")!= -1) {
+                            top.location.href = xhr.responseText;
+                        } else {
+
+                        }
+                    } else {
+                    }
+                }
+            };
+            xhr.open("GET", "http://localhost:3000/logout/" + document.title, true);//注销
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.send(null);
+        }
+    </script>
+
+    <script>
+        function postNote() {
+            // alert("sadas");
+            var time = new Date();
+            var postTime = time.getFullYear() + "-" + (time.getMonth()+1) + "-" + time.getDate() + " " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+            var note = document.getElementById("id_note").value;
+            if (document.getElementById("id_checkBox").checked) {
+                var param = 2;
+            } else {
+                var param = 1;
+            }
+            var state = 1;
+            if (note === "") {
+                alert("笔记不可以为空");
+            } else {
+                var params = "User=" + document.title + "&Ms=" + note + "&Mtime=" + postTime + "&Hide=" + param + "&Pass=" + state;
+                /*异步*/
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4) {  /*所有数据已经就绪*/
+                        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                            if (xhr.responseText.indexOf("http")!= -1) {
+                                top.location.href = xhr.responseText;
+                            } else {
+
+                            }
+                        } else {
+
+                        }
+                    }
+                };
+                xhr.open("POST", "http://localhost:3000/note", true);
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.send(params);
+            }
+        }
+    </script>
+
+    <script>
+        loadData();
+
+        function loadData() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {  /*所有数据已经就绪*/
+                    if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                        if (xhr.responseText === lastTimeData) {
+
+                        } else {
+                            lastTimeData = xhr.responseText;
+                            var jsonObj = JSON.parse(xhr.responseText);
+                            getUserNote(jsonObj);
+                            document.getElementById("id_checkBox").checked=false;
+                            document.getElementById("id_note").value="";
+                        }
+                    } else {
+                    }
+                }
+            };
+            xhr.open("GET", "http://localhost:3000/notes",true);//查询所有笔记
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.send(null);
+        }
+
+        function getUserNote(userNote) {
+            var addNoteList = document.getElementById("id_user_notes");
+            var _html = "";
+            var setId = 1;
+            var text1;
+            var text2;
+            var text3;
+            var corlor;
+            var text4;
+            var user;
+            var _id = 1;
+            var itemID;
+            /*创建标签*/
+            for (var i in userNote) {
+                 text1 =userNote[i].Mtime;
+                 text2 = userNote[i].Ms;
+                 user =userNote[i].User;
+                itemID=userNote[i].N;
+                if (userNote[i].Hide == 1) {
+                     text3 = "所有人可见";
+                } else {
+                     text3 = "匿名";
+                     user="匿名用户";
+                }
+                     color = "#ffe2cf";
+                switch (mode) {
+                    case 1:
+                        if (userNote[i].Pass == 2&&document.title===userNote[i].User) {
+                            var insert = "<div id='"+_id+"' style='background: "+color+"; padding-top: 10px;margin-bottom: 0px; margin-top: 0px;'>" +
+                                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+text1 +
+                                "<br/>" +
+                                "<button id= '"+itemID+"' style='float: right;margin-right: 30px; margin-top: 18px;'>删除</button>" +
+                                "<br/><br/>" +
+                                "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“"+text2+ "”</b>" +
+                                "<br/><br/><br/>" +
+                                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +text3 + "<hr style='margin-bottom: 0px'/></div>";
+                            _html += insert;
+                            setId++;
+                            _id++;
+                        }
+                        break;
+                    case 2:
+                        if (userNote[i].Pass == 1 && document.title===userNote[i].User) {
+                            var insert = "<div id='"+_id+"' style='background: "+color+"; padding-top: 10px;margin-bottom: 0px; margin-top: 0px;'>" +
+                                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                                +text1 +
+                                "<br/>" +
+                                "<button id='"+itemID+"' style='float: right;margin-right: 30px; margin-top: 18px;'>删除</button>" +
+                                "<br/><br/>"+
+                                "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“"+text2+" ”</b>" +
+                                "<br/><br/><br/>" +
+                                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +text3 +
+                                "<hr style='margin-bottom: 0px'/></div>";
+                            setId++;
+                            _html += insert;
+                            _id++;
+                        }
+                        break;
+
+                    case 3:
+                        if (userNote[i].Pass == 2) {
+                            var insert = "<div  style='background: "+color+"; padding-top: 10px;margin-bottom: 0px; margin-top: 0px;'>" +
+                                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                                +text1 +
+                                "<br/><br/><br/>" +
+                                "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用户名："+user+" </b>" +
+                                "<br/><br/><br/>" +
+                                "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“"+text2+ "”</b>" +
+                                "<hr style='margin-bottom: 0px'/></div>";
+                            _html += insert;
+                            _id++;
+                        }
+                        break;
+                }
+            }
+            addNoteList.innerHTML = _html
+            setDeleteListener(addNoteList);
+        }
+    </script>
+
+    <script>
+        var lastTimeData = "";
+        setInterval("loadData()","1000");
+    </script>
+
+    <script>
+        function setDeleteListener(addNoteList) {
+            var list = document.getElementsByTagName("button");
+
+            for(var i = 0; i < list.length; i++) {
+                list[i].onclick = (function(i) {
+                    return function() {
+                        if (i == 0) {
+                            postNote();
+                        }
+                        else {
+                            var xhr = new XMLHttpRequest();
+                            xhr.onreadystatechange = function () {
+                                if (xhr.readyState == 4) {  /*所有数据已经就绪*/
+                                    if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                                    } else {
+                                    }
+                                }
+                            };
+                            try {
+                                xhr.open("DELETE", "http://localhost:3000/notes/" + list[i].id, true);
+                                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                                xhr.send(null);
+                            } catch (err) {
+
+                            }
+
+                        }
+                    }
+                }(i));
+
+            }
+
+            var dlist = document.getElementsByTagName("div");
+            for(var i = 0; i < dlist.length; i++) {
+                dlist[i].onmouseenter = (function(i) {
+                    return function() {
+                        if (i != 0) {
+                            // alert(document.getElementById(i).id);
+                            document.getElementById(i).style.backgroundColor = "#fae6a8";
+                        }
+                    }
+                }(i));
+                dlist[i].onmouseleave= (function(i) {
+                    return function() {
+                        if (i != 0) {
+                            // alert(document.getElementById(i).id);
+                            document.getElementById(i).style.backgroundColor = "#ffe2cf";
+                        }
+                    }
+                }(i));
+            }
+        }
+    </script>
+
+</body>
+</html>

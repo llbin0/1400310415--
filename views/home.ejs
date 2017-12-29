@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><%= title %></title>
+        <link rel='stylesheet' href='/stylesheets/style.css' />
+
+        <ul style="width: 100%;
+    height: 60px;
+    line-height: 60px;
+    display:block;
+    margin: 0 auto;
+    padding: 0px;
+    background-color: beige;
+    font-size: 40px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LLBMs
+            <li style=" width: 60px;
+  height: 30px;
+  display: block;
+  color: black;
+  line-height: 60px;
+  text-align: right;
+  list-style-type: none;
+  float: right;"><a href="./login" target="_self" id="signIn" style="cursor: pointer" >注册</a></li>
+            <li style=" width: 60px;
+  height: 30px;
+  display: block;
+  color: black;
+  line-height: 60px;
+  text-align: right;
+  list-style-type: none;
+  float: right;"><a  href="./login" target="_self" id="signIn"style="cursor: pointer" >登陆</a></li>
+
+
+        </ul>
+<br/>
+    </head>
+        <h2>以下为本站所有留言</h2>
+    <br/>
+
+        <div id="id_user_notes" >
+            <!--add-->
+        </div>
+
+        <script>
+            document.getElementById('titleBar').style.boxShadow = "0px 0px 10px 3px #fbfbfb";
+        </script>
+
+
+        <script>
+            loadData();
+
+            function loadData() {
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4) {  /*所有数据已经就绪*/
+                        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                            if (xhr.responseText === lastTimeData) {
+
+                            } else {
+                                lastTimeData = xhr.responseText;
+                                var jsonObj = JSON.parse(xhr.responseText);
+                                getUserNote(jsonObj);
+                            }
+                        } else {
+                        }
+                    }
+                };
+                xhr.open("GET", "http://localhost:3000/notes", true);
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.send(null);
+            }
+
+            function getUserNote(userNote) {
+                var addNoteList = document.getElementById("id_user_notes");
+               var  _html = "";
+                /*创建标签*/
+                for (var i in userNote) {
+                    var text1=userNote[i].Mtime;
+                    var user = userNote[i].User;
+                    var text2 = userNote[i].Ms;
+                    var Hi="2";
+                    if (userNote[i].Hide == "2") {
+                        user = "匿名";
+                    }
+                    var color="#FAEBD7";
+                    var insert = "<div  style='background: "+color+"; padding-top: 10px;margin-bottom: 0px; margin-top: 0px;'>" +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                        +text1 +
+                        "<br/><br/><br/>" +
+                        "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“"+text2+" ”</b>" +
+                        "<br/><br/><br/>" +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用户：" +user +
+                        "<hr style='margin-bottom: 0px'/></div>";
+                    if (userNote[i].Pass == 2) {
+                        _html += insert;
+                    }
+                }
+                addNoteList.innerHTML = _html
+                console.log(_html);
+            }
+        </script>
+
+        <script>
+            var lastTimeData = "";
+            setInterval("loadData()","1000");
+        </script>
+
+    </body>
+</html>

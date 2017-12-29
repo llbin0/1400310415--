@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/admin.css'/>
+</head>
+<body>
+<ul style="width: 100%;
+    height: 60px;
+    line-height: 60px;
+    display:block;
+    margin: 0 auto;
+    padding: 0px;
+    background-color: beige;
+    font-size: 40px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LLBMs
+    <li style=" width: 60px;
+        height: 30px;
+        display: block;
+        color: black;
+        line-height: 60px;
+        text-align: right;
+        list-style-type: none;
+        float: right;"><a  target="_self" id="aA" style="cursor: pointer" >待审核</a></li>
+    <li style=" width: 100px;
+  height: 30px;
+  display: block;
+  color: black;
+  line-height: 60px;
+  text-align: right;
+  list-style-type: none;
+  float: right;"><a  target="_self" id="aB" style="cursor: pointer" >已通过</a></li>
+    <li style=" width: 100px;
+  height: 30px;
+  display: block;
+  color: black;
+  line-height: 60px;
+  text-align: right;
+  list-style-type: none;
+  float: right;"><a  target="_self" id="aC" style="cursor: pointer" >全部留言</a></li>
+    <li style=" width: 100px;
+  height: 30px;
+  display: block;
+  color: black;
+  line-height: 60px;
+  text-align: right;
+  list-style-type: none;
+  float: right;"><a target="_self" id="BC" style="cursor: pointer" >注销</a></li>
+
+</ul>
+<h1><%= title %></h1>
+<p>Welcome</p>
+<div id="id_user_notes">
+    <!--add-->
+</div>
+
+<script>
+    var mode = 1;
+    var lastMode = 1;
+</script>
+
+<script>
+    document.getElementById("aA").onclick = function () {
+        lastMode = mode;
+        mode = 1;
+        lastTimeData = null;
+    }
+    document.getElementById("aB").onclick = function () {
+        lastMode = mode;
+        mode = 2;
+        lastTimeData = null;
+    }
+    document.getElementById("aC").onclick = function () {
+        lastMode = mode;
+        mode = 3;
+        lastTimeData = null;
+    }
+</script>
+
+<script>
+    loadData();
+
+    function loadData() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {  /*所有数据已经就绪*/
+                if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                    if (xhr.responseText === lastTimeData) {
+
+                    } else {
+                        lastTimeData = xhr.responseText;
+                        var jsonObj = JSON.parse(xhr.responseText);
+                        getUserNote(jsonObj);
+
+                    }
+                } else {
+                }
+            }
+        };
+        xhr.open("GET", "http://localhost:3000/notes", true);//获取所有留言信息
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhr.send(null);
+    }
+
+    function getUserNote(userNote) {
+        var addNoteList = document.getElementById("id_user_notes");
+        var _html = "";
+        var setId = 0;
+        var text1;
+        var user;
+        var text2;
+        var text3;
+        var color;
+        var itemID;
+        var text4;
+        addNoteList.innerHTML = "";//设置或返回表格行的开始和结束标签之间的 HTML
+        for (var i in userNote) {
+             text1 =userNote[i].Mtime;
+             user = userNote[i].User;
+             text2 = userNote[i].Ms;
+             itemID=userNote[i].N;
+            if (userNote[i].Hide == 1) {
+                 text3 = "所有人可见";
+            } else {
+                 text3 = "匿名";
+            }
+            if (userNote[i].Pass == 1){
+                text4="未通过审核";
+            }
+            else {
+                text4="已通过审核";
+            }
+
+                 color = "#ffe2cf"
+            switch (mode) {
+                case 1:
+                    if (userNote[i].Pass == 1) {
+
+                        var insert = "<div  style='background: "+color+"; padding-top: 10px;margin-bottom: 0px; margin-top: 0px;'>" +
+                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+text1 +
+                            "<br/>" +
+                            "<button id='" + setId + "' class='"+itemID +"' style='float: right;margin-right: 30px; margin-top: 18px; '>添加</button>" +
+                            "<button id='" + (setId+1) + "' class='"+itemID + "'  style='float: right;margin-right: 30px; margin-top: 18px;'>删除</button>" +
+                            "<br/><br/>" +
+                            "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用户名："+user+ "</b><br/><br/><br/>" +
+                            "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“"+text2+ "”</b>" +
+                            "<br/><br/><br/>" +
+                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +text3 + "<hr style='margin-bottom: 0px'/></div>";
+                        setId+=2;
+                        _html += insert;
+                    }
+                    break;
+                case 2:
+                    if (userNote[i].Pass == 2) {
+                        var insert = "<div  style='background: "+color+"; padding-top: 10px;margin-bottom: 0px; margin-top: 0px;'>" +
+                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+text1 +
+                            "<br/>" +
+                            "<button id='" + setId + "' class='"+itemID +"' style='float: right;margin-right: 30px; margin-top: 18px; '>删除</button>" +
+                            "<br/><br/>" +
+                            "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用户名："+user+ "</b><br/><br/><br/>" +
+                            "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“"+text2+ "”</b>" +
+                            "<br/><br/><br/>" +
+                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +text3 + "<hr style='margin-bottom: 0px'/></div>";
+                        setId++;
+                        _html += insert;
+                    }
+                    break;
+
+                case 3:
+                    var insert = "<div  style='background: "+color+"; padding-top: 10px;margin-bottom: 0px; margin-top: 0px;'>" +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+text1 +
+                        "<br/><br/>" +
+                        "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用户名："+user+ "</b><br/><br/><br/>" +
+                        "<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“"+text2+ "”</b>" +
+                        "<br/><br/><br/>" +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +text3 + "<br/><br/><br/>" +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +text4 +"<hr style='margin-bottom: 0px'/></div>";
+
+                    setId++;
+                    _html += insert;
+                    break;
+            }
+        }
+        addNoteList.innerHTML = _html
+        setDeleteListener(addNoteList);
+    }
+</script>
+
+<script>
+    function setDeleteListener(addNoteList) {
+        var list = document.getElementsByTagName("button");
+        for(var i = 0; i < list.length; i++) {
+            list[i].onclick = (function(i) {
+                return function() {
+                    if(mode==1) {
+                        if (i % 2 == 0) {
+                             addNote(document.getElementById("" + (i)).className);
+                        } else {
+                             deleteNote(document.getElementById("" + (i)).className);
+                        }
+                    }else{
+                        deleteNote(document.getElementById("" + (i)).className);
+                    }
+                }
+            }(i));
+        }
+    }
+
+    function deleteNote(ID) {
+        httpReq("DELETE", "http://localhost:3000/notes/" + ID,null);//删除留言
+    }
+
+    function addNote(ID) {
+      httpReq("PUT", "http://localhost:3000/notes/" + ID,null);//添加留言
+    }
+
+</script>
+
+<script>
+    /*设置注销监听*/
+    document.getElementById("BC").onclick = function () {
+        alert("注销");
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {  /*所有数据已经就绪*/
+                if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                    if (xhr.responseText.indexOf("http")!= -1) {
+                        top.location.href = xhr.responseText;
+                    } else {
+
+                    }
+                } else {
+                }
+            }
+        };
+        xhr.open("GET", "http://localhost:3000/logout/" + document.title, true);//注销
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhr.send(null);
+    }
+</script>
+
+<script>
+    var lastTimeData = "";
+    setInterval("loadData()","1000");
+</script>
+
+<script>
+   function httpReq(Method,Url,Param) {//http请求
+       var xhr = new XMLHttpRequest();
+       xhr.onreadystatechange = function () {
+           if (xhr.readyState == 4) {  /*所有数据已经就绪*/
+               if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+
+               }else {
+               }
+           }
+       };
+       try {
+           xhr.open(Method, Url , true);
+           xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+           xhr.send(Param);
+       } catch (err) {
+
+       }
+   }
+</script>
+</body>
+</html>
